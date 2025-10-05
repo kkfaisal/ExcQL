@@ -1,0 +1,34 @@
+/* Main app styles for Excel SQL UI */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f0f6ff;
+    margin: 0;
+    padding: 0;
+}
+.centered-container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(41, 98, 255, 0.08); padding: 32px 40px; }
+h2, h3 { color: #1a56db; }
+.btn-main { background: #2563eb; color: #fff; border: none; border-radius: 6px; padding: 10px 30px; font-size: 1.1em; cursor: pointer; transition: background 0.2s; }
+.btn-main:hover { background: #1e40af; }
+.columns-table { width: 100%; border-collapse: collapse; margin: 0 auto; }
+.columns-table th, .columns-table td { padding: 8px 12px; border: 1px solid #ddd; text-align: center; }
+.columns-table th { background: #dbeafe; }
+.table-name-input { margin-bottom: 10px; }
+input[type="text"], input[type="file"], textarea { border: 1px solid #93c5fd; border-radius: 4px; padding: 6px 10px; font-size: 1em; }
+input[type="text"]:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+.sheet-block { border: 1px solid #93c5fd; border-radius: 8px; padding: 20px; margin-bottom: 30px; background: #eff6ff; }
+ul { padding-left: 20px; }
+.column-tiles { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0 0; padding: 0; }
+.column-tile { background: #bfdbfe; color: #1e40af; border-radius: 6px; padding: 4px 10px; font-size: 0.97em; font-weight: 500; box-shadow: 0 1px 2px rgba(37, 99, 235, 0.1); border: 1px solid #60a5fa; display: inline-block; margin-bottom: 3px; }
+.column-tile-original { background: #dbeafe; color: #1e40af; margin-right: 2px; }
+.column-tile-safe { background: #bfdbfe; color: #1e40af; margin-left: 2px; }
+.column-group-label { font-size: 0.97em; color: #2563eb; font-weight: 600; margin: 6px 0 2px 0; }
+.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 270px; background: #eff6ff; border-right: 1.5px solid #93c5fd; padding: 30px 18px 30px 18px; overflow-y: auto; z-index: 10; }
+.sidebar h2 { font-size: 1.2em; margin-bottom: 18px; }
+.sidebar .table-block { margin-bottom: 18px; }
+.sidebar .table-title { cursor: pointer; font-weight: bold; color: #2563eb; font-size: 1.08em; margin-bottom: 4px; display: flex; align-items: center; }
+.sidebar .table-title .arrow { margin-right: 7px; font-size: 1.1em; transition: transform 0.2s; }
+.main-content { margin-left: 300px; }
+@media (max-width: 900px) { .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1.5px solid #93c5fd; } .main-content { margin-left: 0; } }
+.error-msg { color: #dc2626; font-weight: 500; margin-bottom: 10px; }
