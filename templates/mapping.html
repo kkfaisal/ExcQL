@@ -99,15 +99,20 @@
         }
         
         /* Sheet blocks */
+        /* Sheet blocks */
         .sheet-block {
             background: white;
             border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(148, 163, 184, 0.1);
             border: 1px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sheet-block:hover {
+            box-shadow: 0 8px 30px rgba(148, 163, 184, 0.15);
+            transform: translateY(-2px);
         }
         
         .sheet-block::before {
@@ -117,22 +122,148 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px 0;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .sheet-header:hover {
+            border-bottom-color: #e2e8f0;
+        }
+        
+        .sheet-header.collapsed .sheet-details {
+            margin-bottom: 0;
+        }
+        
+        .sheet-title-section {
+            flex: 1;
         }
         
         .sheet-title {
-            font-size: 1.8em;
-            color: #1e293b;
-            margin-bottom: 25px;
-            font-weight: 700;
             display: flex;
             align-items: center;
+            gap: 12px;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
         }
         
         .sheet-icon {
-            margin-right: 12px;
-            font-size: 1.2em;
-            color: #667eea;
+            font-size: 1.4em;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .sheet-summary {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #64748b;
+        }
+        
+        .sheet-summary span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .toggle-button {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toggle-button:hover {
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+        
+        .toggle-icon {
+            font-size: 1.1em;
+            transition: transform 0.3s ease;
+        }
+        
+        .sheet-header.collapsed .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .sheet-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        
+        .sheet-content.collapsed {
+            max-height: 0;
+        }
+        
+        .sheet-content:not(.collapsed) {
+            max-height: 80vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+        }
+        
+        /* Custom scrollbar styling */
+        .sheet-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .sheet-content::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        .sheet-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            border-radius: 4px;
+        }
+        
+        .sheet-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+        
+        /* Firefox scrollbar */
+        .sheet-content {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        
+        /* Scroll indicator */
+        .sheet-content:not(.collapsed)::after {
+            content: '';
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(transparent, rgba(248, 250, 252, 0.9));
+            pointer-events: none;
+            border-radius: 0 0 12px 12px;
         }
         
         .sheet-info {
@@ -253,14 +384,17 @@
         }
         
         /* Submit section */
-        .submit-section {
+                .submit-section {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 40px;
             padding: 30px;
-            background: white;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: 1px solid #e2e8f0;
+            position: sticky;
+            bottom: 20px;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(148, 163, 184, 0.1);
         }
         
         .btn-primary {
@@ -476,56 +610,88 @@
             <form method="post">
                 {% for file, sheets in excel_data.items() %}
                 <div class="sheet-block">
-                    <h3 class="sheet-title">
-                        <span class="sheet-icon">📄</span>
-                        {{ file }}
-                    </h3>
-                    
-                    {% for sheet, sheetdata in sheets.items() %}
-                    <div class="sheet-info">
-                        <div class="sheet-name">
-                            Sheet: {{ sheet }} 
-                            {% if sheetdata.row_count %}
-                                <span style="color: #64748b; font-size: 0.9em; font-weight: normal;">
-                                    ({{ sheetdata.row_count }} rows, {{ sheetdata.columns|length }} columns)
+                    <div class="sheet-header collapsed" onclick="toggleSheet(this)">
+                        <div class="sheet-title-section">
+                            <h3 class="sheet-title">
+                                <span class="sheet-icon">📄</span>
+                                {{ file }}
+                            </h3>
+                            <div class="sheet-summary">
+                                <span>📊 {{ sheets|length }} sheet{{ 's' if sheets|length > 1 else '' }}</span>
+                                <span>📝 
+                                    {% set file_total_rows = [] %}
+                                    {% for sheet, sheetdata in sheets.items() %}
+                                        {% if sheetdata.row_count %}
+                                            {{ file_total_rows.append(sheetdata.row_count) or '' }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ file_total_rows|sum }} total rows
                                 </span>
-                            {% endif %}
+                                <span>🔗 
+                                    {% set file_total_cols = [] %}
+                                    {% for sheet, sheetdata in sheets.items() %}
+                                        {{ file_total_cols.append(sheetdata.columns|length) or '' }}
+                                    {% endfor %}
+                                    {{ file_total_cols|sum }} total columns
+                                </span>
+                            </div>
                         </div>
-                        
-                        <div class="table-name-input">
-                            <label for="table_{{ file }}_{{ sheet }}">Database Table Name:</label>
-                            <input name="table_{{ file }}_{{ sheet }}" 
-                                   id="table_{{ file }}_{{ sheet }}"
-                                   value="{{ sheetdata.safe_sheet }}" 
-                                   required>
+                        <div class="toggle-button">
+                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-text">Expand to Edit</span>
                         </div>
-                        
-                        <table class="columns-table">
-                            <thead>
-                                <tr>
-                                    <th>Original Column Name</th>
-                                    <th>Database Column Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for col in sheetdata.columns %}
-                                <tr>
-                                    <td>
-                                        <span class="column-tile column-tile-original">{{ col.original }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="column-tile column-tile-safe">{{ col.safe }}</span>
-                                        <input name="col_{{ file }}_{{ sheet }}_{{ loop.index0 }}" 
-                                               value="{{ col.safe }}" 
-                                               required 
-                                               class="column-input">
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
-                    {% endfor %}
+                    
+                    <div class="sheet-content collapsed">
+                        {% for sheet, sheetdata in sheets.items() %}
+                        <div class="sheet-info">
+                            <div class="sheet-name">
+                                <strong>Sheet:</strong> {{ sheet }} 
+                                {% if sheetdata.row_count %}
+                                    <span style="color: #64748b; font-size: 0.9em; font-weight: normal;">
+                                        ({{ sheetdata.row_count }} rows, {{ sheetdata.columns|length }} columns)
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="table-name-input">
+                                <label for="table_{{ file }}_{{ sheet }}">Database Table Name:</label>
+                                <input name="table_{{ file }}_{{ sheet }}" 
+                                       id="table_{{ file }}_{{ sheet }}"
+                                       value="{{ sheetdata.safe_sheet }}" 
+                                       required>
+                            </div>
+                            
+                            <table class="columns-table">
+                                <thead>
+                                    <tr>
+                                        <th>Original Column Name</th>
+                                        <th>Database Column Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for col in sheetdata.columns %}
+                                    <tr>
+                                        <td>
+                                            <span class="column-tile column-tile-original">{{ col.original }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="column-tile column-tile-safe">{{ col.safe }}</span>
+                                            <input name="col_{{ file }}_{{ sheet }}_{{ loop.index0 }}" 
+                                                   value="{{ col.safe }}" 
+                                                   required 
+                                                   class="column-input">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if not loop.last %}
+                            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endfor %}
                 
@@ -540,5 +706,80 @@
             </form>
         </div>
     </div>
+    
+    <script>
+        function toggleSheet(headerElement) {
+            const contentElement = headerElement.nextElementSibling;
+            const toggleIcon = headerElement.querySelector('.toggle-icon');
+            const toggleText = headerElement.querySelector('.toggle-text');
+            
+            // Toggle the collapsed class
+            headerElement.classList.toggle('collapsed');
+            contentElement.classList.toggle('collapsed');
+            
+            // Update button text and icon
+            if (headerElement.classList.contains('collapsed')) {
+                toggleText.textContent = 'Expand to Edit';
+                toggleIcon.textContent = '▼';
+            } else {
+                toggleText.textContent = 'Collapse';
+                toggleIcon.textContent = '▲';
+                
+                // Scroll the expanded content into view if needed
+                setTimeout(() => {
+                    const rect = contentElement.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+                    
+                    if (rect.bottom > viewportHeight - 100) {
+                        contentElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                    
+                    // Add scroll listener for visual feedback
+                    addScrollListener(contentElement);
+                }, 400);
+            }
+        }
+        
+        function addScrollListener(contentElement) {
+            contentElement.addEventListener('scroll', function() {
+                const isScrollable = this.scrollHeight > this.clientHeight;
+                const isAtBottom = this.scrollTop + this.clientHeight >= this.scrollHeight - 5;
+                
+                // Add visual indicator if there's more content below
+                if (isScrollable && !isAtBottom) {
+                    this.style.borderBottom = '3px solid #3b82f6';
+                } else {
+                    this.style.borderBottom = 'none';
+                }
+            });
+            
+            // Trigger initial check
+            contentElement.dispatchEvent(new Event('scroll'));
+        }
+        
+        // Optional: Add keyboard accessibility
+        document.addEventListener('DOMContentLoaded', function() {
+            const headers = document.querySelectorAll('.sheet-header');
+            headers.forEach(header => {
+                header.setAttribute('tabindex', '0');
+                header.setAttribute('role', 'button');
+                header.setAttribute('aria-expanded', 'false');
+                
+                header.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleSheet(this);
+                        
+                        // Update aria-expanded
+                        const isExpanded = !this.classList.contains('collapsed');
+                        this.setAttribute('aria-expanded', isExpanded.toString());
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

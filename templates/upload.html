@@ -351,21 +351,18 @@
             <h1 class="page-title">📊 Upload Excel Files</h1>
             <p class="page-subtitle">
                 Transform your Excel data into powerful SQL queries.<br>
-                Upload Excel files (.xlsx) one by one to get started with data analysis.
+                Upload multiple Excel files (.xlsx) at once to get started with data analysis.
             </p>
             
             <form method="post" enctype="multipart/form-data" id="uploadForm">
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📁</div>
-                    <div class="upload-text">Drop Excel file here or click to browse</div>
-                    <div class="upload-hint">Supports .xlsx files • Add files one by one • Duplicate sheet names will be numbered automatically</div>
-                    <input type="file" name="single_file" accept=".xlsx" class="file-input" id="fileInput">
+                    <div class="upload-text">Drop Excel files here or click to browse</div>
+                    <div class="upload-hint">Supports .xlsx files • Select multiple files at once • Duplicate sheet names will be numbered automatically</div>
+                    <input type="file" name="files" multiple accept=".xlsx" class="file-input" id="fileInput">
                 </div>
                 
                 <div class="file-list" id="fileList"></div>
-                
-                <!-- Hidden input to store accumulated files -->
-                <input type="file" name="files" multiple accept=".xlsx" style="display: none;" id="accumulatedFiles">
                 
                 <!-- File Processing Loader -->
                 <div class="file-loader" id="fileLoader">
@@ -435,35 +432,38 @@
             );
             
             if (files.length > 0) {
-                // For drag and drop, we'll add the first file only to maintain single file behavior
-                const file = files[0];
-                addSingleFile(file);
+                addMultipleFiles(files);
             }
         });
 
         // Update file list when files are selected
         fileInput.addEventListener('change', (e) => {
             if (fileInput.files && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                addSingleFile(file);
-                // Clear the input so the same file can be selected again if needed
-                fileInput.value = '';
+                const files = Array.from(fileInput.files);
+                addMultipleFiles(files);
             }
         });
 
-        function addSingleFile(file) {
-            // Check if file already exists
-            const existingFile = collectedFiles.find(f => f.name === file.name && f.size === file.size);
-            if (existingFile) {
-                alert(`File "${file.name}" is already added!`);
-                return;
-            }
-
-            // Add file to collection
-            collectedFiles.push(file);
+        function addMultipleFiles(files) {
+            const newFiles = [];
             
-            // Process files with loader
-            processFiles();
+            files.forEach(file => {
+                // Check if file already exists
+                const existingFile = collectedFiles.find(f => f.name === file.name && f.size === file.size);
+                if (!existingFile) {
+                    newFiles.push(file);
+                    collectedFiles.push(file);
+                } else {
+                    console.log(`File "${file.name}" is already added, skipping.`);
+                }
+            });
+
+            if (newFiles.length > 0) {
+                // Process files with loader
+                processFiles();
+            } else if (files.length > 0) {
+                alert('All selected files have already been added!');
+            }
         }
 
         function processFiles() {
@@ -484,8 +484,8 @@
                 // Hide loader
                 fileLoader.style.display = 'none';
                 
-                // Update accumulated files input
-                updateAccumulatedFiles();
+                // Update file input with all collected files
+                updateFileInput();
                 
                 // Show file list and success
                 updateFileList();
@@ -499,11 +499,11 @@
             }, 1000); // 1 second processing time
         }
 
-        function updateAccumulatedFiles() {
-            // Create a new DataTransfer object to update the hidden input
+        function updateFileInput() {
+            // Create a new DataTransfer object to update the file input
             const dt = new DataTransfer();
             collectedFiles.forEach(file => dt.items.add(file));
-            accumulatedFiles.files = dt.files;
+            fileInput.files = dt.files;
         }
 
         function resetUI() {
@@ -514,7 +514,7 @@
             disableButton();
             isProcessingFiles = false;
             collectedFiles = [];
-            accumulatedFiles.files = new DataTransfer().files;
+            fileInput.value = '';
         }
 
         function enableButton() {
