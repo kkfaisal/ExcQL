@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Table and Column Mapping - QueryX</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .queryx-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .queryx-logo {
+            font-size: 2em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .queryx-logo .x {
+            color: #fbbf24;
+            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Main content */
+        .page-container {
+            min-height: 100vh;
+            padding: 100px 20px 50px;
+        }
+        
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            font-size: 2.5em;
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        /* Sheet blocks */
+        .sheet-block {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sheet-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .sheet-title {
+            font-size: 1.8em;
+            color: #1e293b;
+            margin-bottom: 25px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sheet-icon {
+            margin-right: 12px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+        
+        .sheet-info {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .sheet-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 15px;
+        }
+        
+        .table-name-input {
+            margin-bottom: 20px;
+        }
+        
+        .table-name-input label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .table-name-input input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .table-name-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        /* Columns table */
+        .columns-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .columns-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1em;
+        }
+        
+        .columns-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        .columns-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .columns-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .column-tile {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .column-tile-original {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fbbf24;
+        }
+        
+        .column-tile-safe {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #3b82f6;
+        }
+        
+        .column-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            margin-top: 8px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .column-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        /* Submit section */
+        .submit-section {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+        }
+        
+        /* Progress indicator */
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+            gap: 20px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .step.completed {
+            color: #667eea;
+        }
+        
+        .step.active {
+            color: #1e293b;
+            font-weight: 700;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+        
+        .step.completed .step-number {
+            background: #667eea;
+            color: white;
+        }
+        
+        .step.active .step-number {
+            background: #1e293b;
+            color: white;
+        }
+        
+        .step-arrow {
+            color: #cbd5e1;
+            margin: 0 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .queryx-header {
+                padding: 0 15px;
+            }
+            
+            .queryx-logo {
+                font-size: 1.5em;
+            }
+            
+            .header-actions {
+                gap: 10px;
+            }
+            
+            .header-btn {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            
+            .page-container {
+                padding: 90px 15px 30px;
+            }
+            
+            .page-title {
+                font-size: 2em;
+            }
+            
+            .sheet-block {
+                padding: 20px;
+            }
+            
+            .columns-table {
+                font-size: 0.9em;
+            }
+            
+            .columns-table th,
+            .columns-table td {
+                padding: 12px 15px;
+            }
+            
+            .progress-steps {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .step-arrow {
+                transform: rotate(90deg);
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .sheet-block {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .sheet-block:nth-child(odd) {
+            animation-delay: 0.1s;
+        }
+        
+        .sheet-block:nth-child(even) {
+            animation-delay: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="queryx-header">
+        <div class="queryx-logo">query<span class="x">X</span></div>
+        <div class="header-actions">
+            <a href="/" class="header-btn">← Back to Upload</a>
+        </div>
+    </div>
+
+    <!-- Page Container -->
+    <div class="page-container">
+        <div class="content-wrapper">
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-number">1</div>
+                    <span>Upload Files</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <span>Configure Mapping</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span>Generate SQL</span>
+                </div>
+            </div>
+            
+            <h1 class="page-title">🗂️ Table and Column Mapping</h1>
+            <p class="page-subtitle">
+                Configure how your Excel sheets and columns will be mapped to database tables.<br>
+                You can customize table names and column names to be database-friendly. Duplicate sheet names are automatically numbered.
+            </p>
+            
+            <!-- Summary Section -->
+            <div style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+                <h3 style="color: #475569; margin-bottom: 10px;">📋 Processing Summary</h3>
+                <p style="color: #64748b; margin: 0;">
+                    <strong>{{ excel_data|length }}</strong> file{{ 's' if excel_data|length > 1 else '' }} • 
+                    <strong>
+                        {% set total_sheets = [] %}
+                        {% for file, sheets in excel_data.items() %}
+                            {% for sheet in sheets %}
+                                {{ total_sheets.append(sheet) or '' }}
+                            {% endfor %}
+                        {% endfor %}
+                        {{ total_sheets|length }}
+                    </strong> sheet{{ 's' if total_sheets|length > 1 else '' }} • 
+                    <strong>
+                        {% set total_rows = [] %}
+                        {% for file, sheets in excel_data.items() %}
+                            {% for sheet, sheetdata in sheets.items() %}
+                                {% if sheetdata.row_count %}
+                                    {{ total_rows.append(sheetdata.row_count) or '' }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {{ total_rows|sum }}
+                    </strong> total rows
+                </p>
+            </div>
+            
+            <form method="post">
+                {% for file, sheets in excel_data.items() %}
+                <div class="sheet-block">
+                    <h3 class="sheet-title">
+                        <span class="sheet-icon">📄</span>
+                        {{ file }}
+                    </h3>
+                    
+                    {% for sheet, sheetdata in sheets.items() %}
+                    <div class="sheet-info">
+                        <div class="sheet-name">
+                            Sheet: {{ sheet }} 
+                            {% if sheetdata.row_count %}
+                                <span style="color: #64748b; font-size: 0.9em; font-weight: normal;">
+                                    ({{ sheetdata.row_count }} rows, {{ sheetdata.columns|length }} columns)
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="table-name-input">
+                            <label for="table_{{ file }}_{{ sheet }}">Database Table Name:</label>
+                            <input name="table_{{ file }}_{{ sheet }}" 
+                                   id="table_{{ file }}_{{ sheet }}"
+                                   value="{{ sheetdata.safe_sheet }}" 
+                                   required>
+                        </div>
+                        
+                        <table class="columns-table">
+                            <thead>
+                                <tr>
+                                    <th>Original Column Name</th>
+                                    <th>Database Column Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for col in sheetdata.columns %}
+                                <tr>
+                                    <td>
+                                        <span class="column-tile column-tile-original">{{ col.original }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="column-tile column-tile-safe">{{ col.safe }}</span>
+                                        <input name="col_{{ file }}_{{ sheet }}_{{ loop.index0 }}" 
+                                               value="{{ col.safe }}" 
+                                               required 
+                                               class="column-input">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                
+                <div class="submit-section">
+                    <button type="submit" class="btn-primary">
+                        💾 Save Mapping & Continue
+                    </button>
+                    <p style="margin-top: 15px; color: #64748b; font-size: 0.9em;">
+                        This will process your data and take you to the SQL generation page
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

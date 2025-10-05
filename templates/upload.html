@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Excel Files - QueryX</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #334155;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .queryx-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .queryx-logo {
+            font-size: 2.5em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .queryx-logo .x {
+            color: #fbbf24;
+            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+        
+        /* Main content */
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px 50px;
+        }
+        
+        .upload-card {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .page-title {
+            font-size: 2.2em;
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        /* Upload area */
+        .upload-area {
+            border: 3px dashed #cbd5e1;
+            border-radius: 15px;
+            padding: 50px 30px;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover .upload-icon {
+            color: #667eea;
+            transform: scale(1.1);
+        }
+        
+        .upload-text {
+            font-size: 1.2em;
+            color: #475569;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .upload-hint {
+            color: #64748b;
+            font-size: 0.95em;
+            margin-bottom: 25px;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .file-item {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .file-name {
+            color: #475569;
+            font-weight: 500;
+        }
+        
+        .file-size {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+        
+        .remove-file {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            min-width: 200px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Progress bar */
+        .upload-progress {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* File processing loader */
+        .file-loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .loader-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        .loader-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .loader-subtext {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Success indicator */
+        .file-success {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success-icon {
+            font-size: 2em;
+            color: #16a34a;
+            margin-bottom: 10px;
+        }
+        
+        .success-text {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .queryx-header {
+                padding: 0 15px;
+            }
+            
+            .queryx-logo {
+                font-size: 2em;
+            }
+            
+            .upload-card {
+                margin: 20px;
+                padding: 30px 25px;
+            }
+            
+            .page-title {
+                font-size: 1.8em;
+            }
+            
+            .upload-area {
+                padding: 30px 20px;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .upload-card {
+            animation: fadeInUp 0.6s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="queryx-header">
+        <div class="queryx-logo">query<span class="x">X</span></div>
+    </div>
+
+    <!-- Page Container -->
+    <div class="page-container">
+        <div class="upload-card">
+            <h1 class="page-title">📊 Upload Excel Files</h1>
+            <p class="page-subtitle">
+                Transform your Excel data into powerful SQL queries.<br>
+                Upload Excel files (.xlsx) one by one to get started with data analysis.
+            </p>
+            
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Drop Excel file here or click to browse</div>
+                    <div class="upload-hint">Supports .xlsx files • Add files one by one • Duplicate sheet names will be numbered automatically</div>
+                    <input type="file" name="single_file" accept=".xlsx" class="file-input" id="fileInput">
+                </div>
+                
+                <div class="file-list" id="fileList"></div>
+                
+                <!-- Hidden input to store accumulated files -->
+                <input type="file" name="files" multiple accept=".xlsx" style="display: none;" id="accumulatedFiles">
+                
+                <!-- File Processing Loader -->
+                <div class="file-loader" id="fileLoader">
+                    <div class="loader-spinner"></div>
+                    <div class="loader-text">Processing files...</div>
+                    <div class="loader-subtext">Please wait while we prepare your files</div>
+                </div>
+                
+                <!-- Success Indicator -->
+                <div class="file-success" id="fileSuccess">
+                    <div class="success-icon">✅</div>
+                    <div class="success-text">Files ready for processing!</div>
+                </div>
+                
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="uploadBtn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    🚀 Process Files
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const accumulatedFiles = document.getElementById('accumulatedFiles');
+        const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+        const fileLoader = document.getElementById('fileLoader');
+        const fileSuccess = document.getElementById('fileSuccess');
+
+        let isProcessingFiles = false;
+        let collectedFiles = []; // Array to store accumulated files
+
+        // Make the upload area clickable
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(file => 
+                file.name.toLowerCase().endsWith('.xlsx')
+            );
+            
+            if (files.length > 0) {
+                // For drag and drop, we'll add the first file only to maintain single file behavior
+                const file = files[0];
+                addSingleFile(file);
+            }
+        });
+
+        // Update file list when files are selected
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                addSingleFile(file);
+                // Clear the input so the same file can be selected again if needed
+                fileInput.value = '';
+            }
+        });
+
+        function addSingleFile(file) {
+            // Check if file already exists
+            const existingFile = collectedFiles.find(f => f.name === file.name && f.size === file.size);
+            if (existingFile) {
+                alert(`File "${file.name}" is already added!`);
+                return;
+            }
+
+            // Add file to collection
+            collectedFiles.push(file);
+            
+            // Process files with loader
+            processFiles();
+        }
+
+        function processFiles() {
+            if (isProcessingFiles) return;
+            
+            isProcessingFiles = true;
+            
+            // Hide previous states
+            fileList.style.display = 'none';
+            fileSuccess.style.display = 'none';
+            
+            // Show loader and disable button
+            fileLoader.style.display = 'block';
+            disableButton();
+            
+            // Simulate file processing time
+            setTimeout(() => {
+                // Hide loader
+                fileLoader.style.display = 'none';
+                
+                // Update accumulated files input
+                updateAccumulatedFiles();
+                
+                // Show file list and success
+                updateFileList();
+                fileList.style.display = 'block';
+                fileSuccess.style.display = 'block';
+                
+                // Enable button
+                enableButton();
+                
+                isProcessingFiles = false;
+            }, 1000); // 1 second processing time
+        }
+
+        function updateAccumulatedFiles() {
+            // Create a new DataTransfer object to update the hidden input
+            const dt = new DataTransfer();
+            collectedFiles.forEach(file => dt.items.add(file));
+            accumulatedFiles.files = dt.files;
+        }
+
+        function resetUI() {
+            fileLoader.style.display = 'none';
+            fileSuccess.style.display = 'none';
+            fileList.style.display = 'block';
+            fileList.innerHTML = '';
+            disableButton();
+            isProcessingFiles = false;
+            collectedFiles = [];
+            accumulatedFiles.files = new DataTransfer().files;
+        }
+
+        function enableButton() {
+            uploadBtn.disabled = false;
+            uploadBtn.style.opacity = '1';
+            uploadBtn.style.cursor = 'pointer';
+            uploadBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            uploadBtn.textContent = collectedFiles.length > 0 
+                ? `🚀 Process ${collectedFiles.length} File${collectedFiles.length > 1 ? 's' : ''}`
+                : '🚀 Process Files';
+        }
+
+        function disableButton() {
+            uploadBtn.disabled = true;
+            uploadBtn.style.opacity = '0.5';
+            uploadBtn.style.cursor = 'not-allowed';
+            uploadBtn.style.background = '#94a3b8';
+            uploadBtn.textContent = isProcessingFiles ? '⏳ Processing Files...' : '🚀 Process Files';
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            if (collectedFiles.length > 0) {
+                collectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div>
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                        <button type="button" class="remove-file" onclick="removeFile(${index})">×</button>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+        }
+
+        function removeFile(index) {
+            if (isProcessingFiles) return; // Don't allow removal during processing
+            
+            // Remove file from collection
+            collectedFiles.splice(index, 1);
+            
+            if (collectedFiles.length > 0) {
+                processFiles(); // Re-process remaining files
+            } else {
+                resetUI(); // Reset if no files left
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Form submission
+        uploadForm.addEventListener('submit', (e) => {
+            // Prevent submission if still processing files
+            if (isProcessingFiles) {
+                e.preventDefault();
+                alert('Please wait while files are being processed.');
+                return false;
+            }
+            
+            // Prevent submission if button is disabled
+            if (uploadBtn.disabled || collectedFiles.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one Excel file first.');
+                return false;
+            }
+            
+            // Show progress bar immediately
+            uploadProgress.style.display = 'block';
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '⏳ Uploading to Server...';
+            uploadBtn.style.opacity = '0.7';
+            uploadBtn.style.background = '#94a3b8';
+            
+            // Hide other elements
+            fileLoader.style.display = 'none';
+            fileSuccess.style.display = 'none';
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) {
+                    progress = 90;
+                    clearInterval(progressInterval);
+                }
+                progressFill.style.width = progress + '%';
+            }, 200);
+            
+            // Let the form submit normally
+            return true;
+        });
+
+        // Initialize button state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            disableButton();
+        });
+    </script>
+</body>
+</html>

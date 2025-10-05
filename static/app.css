@@ -32,3 +32,51 @@ ul { padding-left: 20px; }
 .main-content { margin-left: 300px; }
 @media (max-width: 900px) { .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1.5px solid #93c5fd; } .main-content { margin-left: 0; } }
 .error-msg { color: #dc2626; font-weight: 500; margin-bottom: 10px; }
+
+/* ExcQL Logo Styles */
+.excql-header {
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    background: #fff;
+    border-bottom: 1px solid #b3d1f7;
+    box-shadow: 0 2px 8px rgba(33,118,174,0.04);
+    padding: 12px 0 8px 0;
+}
+
+.excql-logo {
+    font-size: 2.2em;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: center;
+    cursor: default;
+    user-select: none;
+    color: #28a745;
+    text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 4px 8px rgba(40, 167, 69, 0.4),
+        0 6px 12px rgba(40, 167, 69, 0.2);
+    filter: drop-shadow(0 4px 8px rgba(40, 167, 69, 0.3));
+}
+
+.excql-logo .ex {
+    font-weight: 900;
+    color: inherit;
+}
+
+.excql-logo .c {
+    font-weight: 600;
+    color: inherit;
+}
+
+.excql-logo .q {
+    font-weight: 600;
+    color: inherit;
+}
+
+.excql-logo .l {
+    font-weight: 900;
+    color: inherit;
+}

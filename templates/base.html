@@ -1,0 +1,33 @@
+<!-- Main HTML template for Excel SQL UI -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel to SQL Rule Engine</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <script>
+    function toggleTable(idx) {
+        var ul = document.getElementById('table-cols-' + idx);
+        var arrow = document.getElementById('arrow-' + idx);
+        if (ul.style.display === 'none') {
+            ul.style.display = 'block';
+            arrow.style.transform = 'rotate(90deg)';
+        } else {
+            ul.style.display = 'none';
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+    window.onload = function() {
+        // Collapse all tables by default
+        var n = document.querySelectorAll('.table-block').length;
+        for (var i = 0; i < n; i++) {
+            document.getElementById('table-cols-' + i).style.display = 'none';
+            document.getElementById('arrow-' + i).style.transform = 'rotate(0deg)';
+        }
+    }
+    </script>
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>

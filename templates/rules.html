@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SQL Generation & Testing - QueryX</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .queryx-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .header-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .header-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .queryx-logo {
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .queryx-logo .x {
+            color: #fbbf24;
+            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+        
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+        }
+        
+        .header-btn-prominent {
+            background: rgba(251, 191, 36, 0.9);
+            color: #1e293b;
+            border: 2px solid #fbbf24;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+        }
+        
+        .header-btn-prominent:hover {
+            background: #fbbf24;
+            color: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+        }
+        
+        .header-btn-secondary {
+            background: rgba(99, 102, 241, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.6);
+        }
+        
+        .header-btn-secondary:hover {
+            background: rgba(99, 102, 241, 1);
+            border-color: rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Main layout */
+        .page-container {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 30px 20px;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            left: 0;
+            z-index: 900;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        
+        /* LLM Prompts Sidebar - positioned on the right */
+        .llm-prompts-sidebar {
+            width: 350px;
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            padding: 30px 20px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            right: 0;
+            z-index: 900;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .llm-prompts-sidebar.open {
+            transform: translateX(0);
+        }
+        
+        .sidebar h3 {
+            color: #475569;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .llm-prompts-sidebar h3 {
+            color: #475569;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .prompt-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .prompt-header {
+            background: #f1f5f9;
+            padding: 12px 15px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .prompt-header:hover {
+            background: #e2e8f0;
+        }
+        
+        .prompt-content {
+            padding: 15px;
+            display: none;
+        }
+        
+        .prompt-text {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .prompt-meta {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #64748b;
+        }
+        
+        .prompt-copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        
+        .prompt-copy-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .mapping-table {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .mapping-toggle {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .mapping-toggle:hover {
+            background: #e2e8f0;
+        }
+        
+        .mapping-content {
+            padding: 15px;
+        }
+        
+        .mapping-content table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        
+        .mapping-content th,
+        .mapping-content td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .mapping-content th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            margin-left: 0;
+            margin-right: 0;
+            transition: margin 0.3s ease;
+        }
+        
+        .main-content.sidebar-open {
+            margin-left: 300px;
+        }
+        
+        .main-content.prompts-open {
+            margin-right: 350px;
+        }
+        
+        .main-content.both-open {
+            margin-left: 300px;
+            margin-right: 350px;
+        }
+        
+        .content-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            font-size: 2em;
+            color: #1e293b;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        /* Tabs */
+        .sql-tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: linear-gradient(to bottom, rgba(102,126,234,0.05), transparent);
+        }
+        
+        .tab-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Form elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        /* Results section */
+        .sql-results {
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .sql-results h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .sql-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        .result-table {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+        
+        /* Error messages */
+        .error-msg {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+            margin-bottom: 20px;
+        }
+        
+        /* SQL textarea enhancements */
+        .sql-textarea-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .sql-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .sql-btn {
+            background: rgba(255,255,255,0.9);
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .sql-btn:hover {
+            background: white;
+            color: #667eea;
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.2);
+        }
+        
+        .sql-btn.copied {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        /* Minimal SQL display styles */
+        .minimal-sql-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .minimal-sql-display {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            position: relative;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .minimal-sql-display::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .minimal-sql-display::-webkit-scrollbar-track {
+            background: #334155;
+            border-radius: 4px;
+        }
+        
+        .minimal-sql-display::-webkit-scrollbar-thumb {
+            background: #64748b;
+            border-radius: 4px;
+        }
+        
+        .minimal-sql-display::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .minimal-sql-controls {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+        
+        .minimal-sql-btn {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .minimal-sql-btn:hover {
+            background: rgba(30, 41, 59, 0.9);
+            color: #fbbf24;
+            border-color: #fbbf24;
+            box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
+        }
+        
+        .minimal-sql-btn.copied {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            border-color: #10b981;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .queryx-header {
+                padding: 0 15px;
+            }
+            
+            .queryx-logo {
+                font-size: 1.5em;
+            }
+            
+            .header-left,
+            .header-right {
+                flex: 0.5;
+            }
+            
+            .header-btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            
+            .header-btn span:last-child {
+                display: none;
+            }
+            
+            .sidebar {
+                width: 280px;
+            }
+            
+            .llm-prompts-sidebar {
+                width: 300px;
+            }
+            
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .main-content.sidebar-open {
+                margin-left: 0;
+            }
+            
+            .main-content.prompts-open {
+                margin-right: 0;
+            }
+            
+            .main-content.both-open {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+        
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 800;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="queryx-header">
+        <div class="header-left">
+            <button id="mappingSidebarToggle" class="header-btn header-btn-prominent" onclick="toggleMappingSidebar()">
+                <span>📊</span>
+                <span id="toggleText">Table Mapping</span>
+            </button>
+        </div>
+        
+        <div class="header-center">
+            <div class="queryx-logo">query<span class="x">X</span></div>
+        </div>
+        
+        <div class="header-right">
+            <button id="llmPromptsToggle" class="header-btn header-btn-secondary" onclick="toggleLLMPrompts()">
+                <span>🤖</span>
+                <span>LLM Prompts</span>
+            </button>
+            <a href="/" class="header-btn">
+                <span>🏠</span>
+                <span>Home</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Page Container -->
+    <div class="page-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="mappingSidebar">
+            <h3>📊 Table Mapping</h3>
+            {% for tname, columns in duckdb_columns.items() %}
+            <div class="mapping-table">
+                <button class="mapping-toggle" onclick="toggleMapping('{{ tname }}')">
+                    {{ tname }} <span id="icon-{{ tname }}">▼</span>
+                </button>
+                <div id="mapping-{{ tname }}" class="mapping-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Original</th>
+                                <th>Sanitized</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for col in columns %}
+                            <tr>
+                                <td>{{ col.original }}</td>
+                                <td><code>{{ col.sanitized }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- LLM Prompts Sidebar -->
+        <div class="llm-prompts-sidebar" id="llmPromptsSidebar">
+            <h3>🤖 LLM Prompts History</h3>
+            
+            {% if llm_prompts and llm_prompts|length > 0 %}
+            <div style="margin-bottom: 15px; text-align: center;">
+                <form method="post" action="/clear_prompts" style="display: inline;">
+                    <button type="submit" class="prompt-copy-btn" style="background: #dc2626; border-color: #dc2626;" onclick="return confirm('Clear all prompt history?')">
+                        🗑️ Clear History
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            
+            <div id="promptsContainer">
+                {% if llm_prompts and llm_prompts|length > 0 %}
+                    {% for prompt_data in llm_prompts|reverse %}
+                    <div class="prompt-section">
+                        <div class="prompt-header" onclick="togglePrompt('{{ loop.index }}')">
+                            <span>{{ prompt_data.type or 'SQL Generation' }}</span>
+                            <span id="prompt-icon-{{ loop.index }}">▼</span>
+                        </div>
+                        <div id="prompt-{{ loop.index }}" class="prompt-content">
+                            <div class="prompt-text">{{ prompt_data.prompt }}</div>
+                            {% if prompt_data.response %}
+                            <div style="margin-top: 15px;">
+                                <strong style="color: #475569;">LLM Response:</strong>
+                                <div class="prompt-text" style="background: #064e3b; color: #a7f3d0;">{{ prompt_data.response }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="prompt-meta">
+                                <strong>Timestamp:</strong> {{ prompt_data.timestamp|replace('T', ' ')|truncate(19, true, '') }}<br>
+                                <strong>Model:</strong> {{ prompt_data.model or 'gpt-3.5-turbo' }}<br>
+                                <strong>Tokens:</strong> {{ prompt_data.tokens or 'N/A' }}
+                                {% if prompt_data.rule_text %}
+                                <br><strong>Rule:</strong> {{ prompt_data.rule_text|truncate(50, true, '...') }}
+                                {% endif %}
+                                {% if prompt_data.error %}
+                                <br><strong>Error Fixed:</strong> {{ prompt_data.error|truncate(100, true, '...') }}
+                                {% endif %}
+                            </div>
+                            <button class="prompt-copy-btn" onclick="copyPrompt('{{ loop.index }}')">📋 Copy Prompt</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div style="text-align: center; color: #64748b; padding: 20px; font-style: italic;">
+                    No prompts sent yet. Generate SQL queries to see LLM interactions here.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar Overlays -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebars()"></div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <div class="content-wrapper">
+                <h1 class="page-title">SQL Generation & Testing</h1>
+                
+                {% if error %}
+                <div class="error-msg">{{ error }}</div>
+                {% endif %}
+
+                <!-- Tabs -->
+                <div class="sql-tabs">
+                    <button type="button" class="tab-btn active" onclick="openTab('generateTab')" id="generateTabBtn">
+                        🤖 Generate SQL
+                    </button>
+                    <button type="button" class="tab-btn" onclick="openTab('writeTab')" id="writeTabBtn">
+                        ✏️ Write SQL
+                    </button>
+                </div>
+
+                <!-- Generate Tab -->
+                <div id="generateTab" class="tab-content">
+                    <form method="post" id="generateSqlForm">
+                        <div class="form-group">
+                            <label class="form-label" for="api_key">OpenAI API Key</label>
+                            <input id="api_key" name="api_key" value="{{ api_key }}" type="password" class="form-input" required>
+                            <small style="color: #64748b; margin-top: 5px; display: block;">Your key is never stored on our servers</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="rule_text">Rule Description</label>
+                            <textarea id="rule_text" name="rule_text" class="form-textarea" placeholder="Describe what you want to query or analyze..." required>{{ rule_text }}</textarea>
+                        </div>
+                        
+                        <button type="submit" name="action" value="generate" class="btn-primary">
+                            Generate SQL ✨
+                        </button>
+                        
+                        {% if sql and (request.form.get('action') == 'generate' or request.form.get('action') == 'test' and session.get('last_action') == 'generate') %}
+                        <div class="sql-results">
+                            <h3>Generated SQL Query</h3>
+                            <div class="sql-textarea-container">
+                                <textarea id="generated_sql" name="sql" class="form-textarea" style="min-height: 150px; font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;">{{ sql }}</textarea>
+                                <div class="sql-controls">
+                                    <button type="button" class="sql-btn" onclick="formatSQL('generated_sql')">
+                                        📐 Format
+                                    </button>
+                                    <button type="button" class="sql-btn" onclick="copySQL('generated_sql')">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <button type="submit" name="action" value="test" class="btn-primary">
+                                    Run SQL 🚀
+                                </button>
+                                <button type="submit" name="action" value="generate" class="btn-secondary" style="margin-left: 10px;">
+                                    Regenerate SQL 🔄
+                                </button>
+                            </div>
+                            <input type="hidden" name="rule_text" value="{{ rule_text }}">
+                            <input type="hidden" name="tab_source" value="generate">
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <!-- Write Tab -->
+                <div id="writeTab" class="tab-content" style="display: none;">
+                    <form method="post" id="writeSqlForm">
+                        <div class="form-group">
+                            <label class="form-label" for="manual_sql">Write Your SQL Query</label>
+                            <div class="sql-textarea-container">
+                                <textarea id="manual_sql" name="sql" class="form-textarea" style="min-height: 200px;" placeholder="SELECT * FROM table_name WHERE condition...">{% if sql and (request.form.get('action') == 'write' or session.get('last_action') == 'write') %}{{ sql }}{% endif %}</textarea>
+                                <div class="sql-controls">
+                                    <button type="button" class="sql-btn" onclick="formatSQL('manual_sql')">
+                                        📐 Format
+                                    </button>
+                                    <button type="button" class="sql-btn" onclick="copySQL('manual_sql')">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" name="action" value="write" class="btn-primary">
+                            Run SQL 🚀
+                        </button>
+                        <input type="hidden" name="api_key" value="dummy-not-used">
+                        <input type="hidden" name="tab_source" value="write">
+                    </form>
+                </div>
+
+                <!-- Common Results Section - Bottom of Page -->
+                {% if sql and (test_result or (test_error and test_error != 'None' and test_error|length > 0)) %}
+                <div class="sql-results" style="margin-top: 50px;">
+                    <h3>📝 Executed SQL Query</h3>
+                    <div class="minimal-sql-container">
+                        <div class="minimal-sql-display" id="executedSqlDisplay">{{ sql }}</div>
+                        <div class="minimal-sql-controls">
+                            <button type="button" class="minimal-sql-btn" onclick="copyMinimalSQL('executedSqlDisplay')">
+                                � Copy
+                            </button>
+                            <button type="button" class="minimal-sql-btn" onclick="expandSQL()">
+                                � Expand
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if test_result %}
+                    <h3 style="margin-top: 30px;">📊 Query Results</h3>
+                    <div style="margin-bottom: 20px;">
+                        <form method="post" action="/download" style="display: inline-block;">
+                            <input type="hidden" name="sql" value="{{ sql }}">
+                            <input type="hidden" name="filename" value="sql_results">
+                            <button type="submit" name="format" value="csv" class="btn-secondary">
+                                📄 Download CSV
+                            </button>
+                            <button type="submit" name="format" value="excel" class="btn-secondary">
+                                📊 Download Excel
+                            </button>
+                        </form>
+                    </div>
+                    <div class="result-table">
+                        <pre>{{ test_result }}</pre>
+                    </div>
+                    {% endif %}
+                    
+                    {% if test_error and test_error != 'None' and test_error|length > 0 %}
+                    <div class="error-msg" style="margin-top: 20px;">
+                        <strong>⚠️ Database Error:</strong> {{ test_error }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function toggleMappingSidebar() {
+            const sidebar = document.getElementById('mappingSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+            const toggleText = document.getElementById('toggleText');
+            const promptsSidebar = document.getElementById('llmPromptsSidebar');
+            
+            const wasOpen = sidebar.classList.contains('open');
+            
+            sidebar.classList.toggle('open');
+            
+            if (window.innerWidth > 768) {
+                updateMainContentMargins();
+            }
+            
+            // Update overlay visibility
+            const anyOpen = sidebar.classList.contains('open') || promptsSidebar.classList.contains('open');
+            if (anyOpen) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+            
+            toggleText.textContent = sidebar.classList.contains('open') ? 'Hide Mapping' : 'Table Mapping';
+        }
+
+        function toggleLLMPrompts() {
+            const promptsSidebar = document.getElementById('llmPromptsSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mappingSidebar = document.getElementById('mappingSidebar');
+            
+            promptsSidebar.classList.toggle('open');
+            
+            if (window.innerWidth > 768) {
+                updateMainContentMargins();
+            }
+            
+            // Update overlay visibility
+            const anyOpen = mappingSidebar.classList.contains('open') || promptsSidebar.classList.contains('open');
+            if (anyOpen) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        function closeSidebars() {
+            const sidebar = document.getElementById('mappingSidebar');
+            const promptsSidebar = document.getElementById('llmPromptsSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleText = document.getElementById('toggleText');
+            
+            sidebar.classList.remove('open');
+            promptsSidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            
+            if (window.innerWidth > 768) {
+                updateMainContentMargins();
+            }
+            
+            toggleText.textContent = 'Table Mapping';
+        }
+
+        function updateMainContentMargins() {
+            const mainContent = document.getElementById('mainContent');
+            const mappingOpen = document.getElementById('mappingSidebar').classList.contains('open');
+            const promptsOpen = document.getElementById('llmPromptsSidebar').classList.contains('open');
+            
+            // Reset all classes
+            mainContent.classList.remove('sidebar-open', 'prompts-open', 'both-open');
+            
+            // Apply appropriate classes
+            if (mappingOpen && promptsOpen) {
+                mainContent.classList.add('both-open');
+            } else if (mappingOpen) {
+                mainContent.classList.add('sidebar-open');
+            } else if (promptsOpen) {
+                mainContent.classList.add('prompts-open');
+            }
+        }
+
+        function togglePrompt(id) {
+            const content = document.getElementById(`prompt-${id}`);
+            const icon = document.getElementById(`prompt-icon-${id}`);
+            
+            if (content.style.display === 'none' || !content.style.display) {
+                content.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        function copyPrompt(id) {
+            const promptText = document.querySelector(`#prompt-${id} .prompt-text`).textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function toggleMapping(tname) {
+            const content = document.getElementById('mapping-' + tname);
+            const icon = document.getElementById('icon-' + tname);
+            
+            if (content.style.display === 'none' || !content.style.display) {
+                content.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        function openTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = "none";
+            }
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+            
+            // Show the specific tab content
+            document.getElementById(tabName).style.display = "block";
+            
+            // Add active class to the button that opened the tab
+            document.getElementById(tabName + "Btn").classList.add("active");
+            
+            // Save active tab
+            localStorage.setItem("activeTab", tabName);
+        }
+
+        // Initialize page
+        window.addEventListener("DOMContentLoaded", function() {
+            // Hide all mapping contents initially
+            {% for tname, columns in duckdb_columns.items() %}
+            document.getElementById('mapping-{{ tname }}').style.display = 'none';
+            {% endfor %}
+            
+            // Check for saved active tab
+            const activeTab = localStorage.getItem("activeTab");
+            if (activeTab) {
+                openTab(activeTab);
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('mappingSidebar');
+            const promptsSidebar = document.getElementById('llmPromptsSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (window.innerWidth <= 768) {
+                mainContent.classList.remove('sidebar-open', 'prompts-open', 'both-open');
+            } else {
+                updateMainContentMargins();
+                const anyOpen = sidebar.classList.contains('open') || promptsSidebar.classList.contains('open');
+                if (!anyOpen) {
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+        
+        // SQL copy and format functions
+        function copySQL(textareaId) {
+            const textarea = document.getElementById(textareaId);
+            const button = event.target.closest('.sql-btn');
+            
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copied';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy SQL: ', err);
+                // Fallback for older browsers
+                textarea.select();
+                document.execCommand('copy');
+            });
+        }
+        
+        // Minimal SQL display functions
+        function copyMinimalSQL(displayId) {
+            const display = document.getElementById(displayId);
+            const button = event.target.closest('.minimal-sql-btn');
+            
+            navigator.clipboard.writeText(display.textContent).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copied';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy SQL: ', err);
+            });
+        }
+        
+        function expandSQL() {
+            const display = document.getElementById('executedSqlDisplay');
+            const button = event.target.closest('.minimal-sql-btn');
+            
+            if (display.style.maxHeight === '120px' || !display.style.maxHeight) {
+                display.style.maxHeight = 'none';
+                button.innerHTML = '📉 Collapse';
+            } else {
+                display.style.maxHeight = '120px';
+                button.innerHTML = '🔍 Expand';
+            }
+        }
+        
+        function formatSQL(textareaId) {
+            const textarea = document.getElementById(textareaId);
+            const sql = textarea.value;
+            
+            // Basic SQL formatting
+            let formatted = sql
+                .replace(/\bSELECT\b/gi, '\nSELECT')
+                .replace(/\bFROM\b/gi, '\nFROM')
+                .replace(/\bWHERE\b/gi, '\nWHERE')
+                .replace(/\bAND\b/gi, '\n  AND')
+                .replace(/\bOR\b/gi, '\n  OR')
+                .replace(/\bORDER BY\b/gi, '\nORDER BY')
+                .replace(/\bGROUP BY\b/gi, '\nGROUP BY')
+                .replace(/\bHAVING\b/gi, '\nHAVING')
+                .replace(/\bJOIN\b/gi, '\nJOIN')
+                .replace(/\bLEFT JOIN\b/gi, '\nLEFT JOIN')
+                .replace(/\bRIGHT JOIN\b/gi, '\nRIGHT JOIN')
+                .replace(/\bINNER JOIN\b/gi, '\nINNER JOIN')
+                .replace(/\bON\b/gi, '\n  ON')
+                .replace(/,/g, ',\n  ')
+                .replace(/\n\s*\n/g, '\n')
+                .trim();
+            
+            textarea.value = formatted;
+        }
+    </script>
+</body>
+</html>
